@@ -25,6 +25,12 @@
     <el-input v-model="suffix"
               placeholder="suffix"></el-input>
   </div>
+  <div class="mt-4">
+    <el-radio-group v-model="isSort">
+      <el-radio label="true">sort</el-radio>
+      <el-radio label="false">unsort</el-radio>
+    </el-radio-group>
+  </div>
   <div class="w-full mt-4">
     <el-button class="w-full"
                type="primary"
@@ -51,6 +57,7 @@
     el: '#app',
     data () {
       return {
+        isSort: 'false',
         prefix: '',
         suffix: '',
         genTxt: 'AABB',
@@ -79,6 +86,32 @@
         }
         return nameList
       },
+      genSortName (nameList, sortKeys, tmpMap) {
+        const sortNameList = []
+        const indexList = sortKeys.sort().map(item => tmpMap[item][0])
+        for (const name of nameList) {
+          let isMatch = true
+          for (let i = 0; i < indexList.length - 1; i++) {
+            const a = sortKeys[i].toLowerCase()
+            const b = sortKeys[i + 1].toLowerCase()
+            const valueA = Number(name[indexList[i]])
+            const valueB = Number(name[indexList[i + 1]])
+            if (a > b) {
+              isMatch = isMatch && ((valueA - valueB) > 0)
+            }
+            if (a < b) {
+              isMatch = isMatch && ((valueA - valueB) < 0)
+            }
+            if (a === b) {
+              isMatch = isMatch && ((valueA - valueB) === 0)
+            }
+          }
+          if (isMatch) {
+            sortNameList.push(name)
+          }
+        }
+        return sortNameList
+      },
       _downloadCsv (csv, name) {
         const downloadLink = document.createElement('a')
         const blob = new Blob(['\ufeff', csv])
@@ -89,30 +122,35 @@
         downloadLink.click()
         document.body.removeChild(downloadLink)
       },
-      doGen () {
+      _genNames () {
+        const sortKeys = []
         const tmpMap = this.genTxt.split('').reduce((res, item, index) => {
           if (!res[item]) {
             res[item] = []
+          }
+          if (!sortKeys.includes(item)) {
+            sortKeys.push(item)
           }
           res[item].push(index)
           return res
         }, {})
         const match = Object.values(tmpMap)
-        const nameList = this.genName(this.genTxt.length, match).map(item => this.prefix + item + this.suffix)
+        let nameList = this.genName(this.genTxt.length, match)
+        if (this.isSort === 'true') {
+          nameList = this.genSortName(nameList, sortKeys, tmpMap)
+        }
+        nameList = nameList.map(item => this.prefix + item + this.suffix)
+        return nameList
+      },
+      doGen () {
+        const nameList = this._genNames()
         const csv = nameList.join('\n')
         this._downloadCsv(csv, `${[this.prefix, this.genTxt, this.suffix].filter(item => !!item).join('-')}.csv`)
       },
       doGenWeb3DID () {
-        const tmpMap = this.genTxt.split('').reduce((res, item, index) => {
-          if (!res[item]) {
-            res[item] = []
-          }
-          res[item].push(index)
-          return res
-        }, {})
-        const match = Object.values(tmpMap)
-        const nameRow = this.genName(this.genTxt.length, match).map(item => {
-          return [this.prefix + item + this.suffix, this.owner, this.inviter, this.rYear].join(',')
+        const nameList = this._genNames()
+        const nameRow = nameList.map(item => {
+          return [item, this.owner, this.inviter, this.rYear].join(',')
         })
         nameRow.unshift(this.web3Did)
         const csv = nameRow.join('\n')
