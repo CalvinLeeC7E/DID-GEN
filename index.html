@@ -17,6 +17,14 @@
   <el-input class="mt-4"
             v-model="genTxt">
   </el-input>
+  <div class="mt-4">
+    <el-input v-model="prefix"
+              placeholder="prefix"></el-input>
+  </div>
+  <div class="mt-4">
+    <el-input v-model="suffix"
+              placeholder="suffix"></el-input>
+  </div>
   <div class="w-full mt-4">
     <el-button class="w-full"
                type="primary"
@@ -30,6 +38,8 @@
     el: '#app',
     data () {
       return {
+        prefix: '',
+        suffix: '',
         genTxt: 'AABB'
       }
     },
@@ -71,9 +81,9 @@
           return res
         }, {})
         const match = Object.values(tmpMap)
-        const nameList = this.genName(this.genTxt.length, match)
+        const nameList = this.genName(this.genTxt.length, match).map(item => this.prefix + item + this.suffix)
         const csv = nameList.join('\n')
-        this._downloadCsv(csv, `${this.genTxt}.csv`)
+        this._downloadCsv(csv, `${[this.prefix, this.genTxt, this.suffix].filter(item => !!item).join('-')}.csv`)
       }
     }
   })
