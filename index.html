@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>DID-Generate</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.10/dist/vue.min.js"></script>
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+  <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+</head>
+<body>
+<div id="app" class="p-4 mx-auto">
+  <div class="text-2xl">
+    DID-GEN
+  </div>
+  <el-input class="mt-4"
+            v-model="genTxt">
+  </el-input>
+  <div class="w-full mt-4">
+    <el-button class="w-full"
+               type="primary"
+               @click="doGen">
+      GEN
+    </el-button>
+  </div>
+</div>
+<script>
+  new Vue({
+    el: '#app',
+    data () {
+      return {
+        genTxt: 'AABB'
+      }
+    },
+    methods: {
+      genName (length, match) {
+        const max = Math.pow(10, length)
+        const nameList = []
+        for (let i = 0; i < max; i++) {
+          const name = String(i).padStart(length, '0')
+          const isMatch = match.every((item) => {
+            let res = true
+            for (let i = 0; i < item.length - 1; i++) {
+              res = res && (name[item[i]] === name[item[i + 1]])
+            }
+            return res
+          })
+          if (isMatch) {
+            nameList.push(name)
+          }
+        }
+        return nameList
+      },
+      _downloadCsv (csv, name) {
+        const downloadLink = document.createElement('a')
+        const blob = new Blob(['\ufeff', csv])
+        const url = URL.createObjectURL(blob)
+        downloadLink.href = url
+        downloadLink.download = name
+        document.body.appendChild(downloadLink)
+        downloadLink.click()
+        document.body.removeChild(downloadLink)
+      },
+      doGen () {
+        const tmpMap = this.genTxt.split('').reduce((res, item, index) => {
+          if (!res[item]) {
+            res[item] = []
+          }
+          res[item].push(index)
+          return res
+        }, {})
+        const match = Object.values(tmpMap)
+        const nameList = this.genName(this.genTxt.length, match)
+        const csv = nameList.join('\n')
+        this._downloadCsv(csv, `${this.genTxt}.csv`)
+      }
+    }
+  })
+</script>
+</body>
+</html>
