@@ -88,22 +88,23 @@
       },
       genSortName (nameList, sortKeys, tmpMap) {
         const sortNameList = []
-        const indexList = sortKeys.sort().map(item => tmpMap[item][0])
         for (const name of nameList) {
           let isMatch = true
-          for (let i = 0; i < indexList.length - 1; i++) {
-            const a = sortKeys[i].toLowerCase()
-            const b = sortKeys[i + 1].toLowerCase()
-            const valueA = Number(name[indexList[i]])
-            const valueB = Number(name[indexList[i + 1]])
-            if (a > b) {
-              isMatch = isMatch && ((valueA - valueB) > 0)
-            }
-            if (a < b) {
-              isMatch = isMatch && ((valueA - valueB) < 0)
-            }
-            if (a === b) {
-              isMatch = isMatch && ((valueA - valueB) === 0)
+          for (let i = 0; i < sortKeys.length - 1; i++) {
+            for (let j = i + 1; j < sortKeys.length; j++) {
+              const a = sortKeys[i].toLowerCase()
+              const b = sortKeys[j].toLowerCase()
+              const valueA = Number(name[tmpMap[sortKeys[i]][0]])
+              const valueB = Number(name[tmpMap[sortKeys[j]][0]])
+              if (a > b) {
+                isMatch = isMatch && ((valueA - valueB) > 0)
+              }
+              if (a < b) {
+                isMatch = isMatch && ((valueA - valueB) < 0)
+              }
+              if (a === b) {
+                isMatch = isMatch && ((valueA - valueB) === 0)
+              }
             }
           }
           if (isMatch) {
@@ -142,10 +143,15 @@
         nameList = nameList.map(item => this.prefix + item + this.suffix)
         return nameList
       },
+      _csvFileName (typeName = '') {
+        const fileName = [this.prefix, this.genTxt, this.suffix].filter(item => !!item).join('-')
+        const isSort = this.isSort === 'false' ? 'unsort' : 'sort'
+        return typeName ? `${fileName}-${isSort}-${typeName}.csv` : `${fileName}-${isSort}.csv`
+      },
       doGen () {
         const nameList = this._genNames()
         const csv = nameList.join('\n')
-        this._downloadCsv(csv, `${[this.prefix, this.genTxt, this.suffix].filter(item => !!item).join('-')}.csv`)
+        this._downloadCsv(csv, this._csvFileName())
       },
       doGenWeb3DID () {
         const nameList = this._genNames()
@@ -154,7 +160,7 @@
         })
         nameRow.unshift(this.web3Did)
         const csv = nameRow.join('\n')
-        this._downloadCsv(csv, `${[this.prefix, this.genTxt, this.suffix].filter(item => !!item).join('-')}-web3did.csv`)
+        this._downloadCsv(csv, this._csvFileName('web3did'))
       }
     }
   })
