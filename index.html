@@ -8,55 +8,73 @@
   <script src="https://unpkg.com/element-ui/lib/index.js"></script>
   <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+  <script src="https://unpkg.com/web3@1.7.5/dist/web3.min.js"></script>
 </head>
 <body>
 <div id="app" class="p-4 mx-auto">
   <div class="text-2xl">
     DID-GEN
   </div>
-  <el-input class="mt-4"
-            v-model="genTxt">
-  </el-input>
-  <div class="mt-4">
-    <el-input v-model="prefix"
-              placeholder="prefix"></el-input>
-  </div>
-  <div class="mt-4">
-    <el-input v-model="suffix"
-              placeholder="suffix"></el-input>
-  </div>
-  <div class="mt-4">
-    <el-radio-group v-model="isSort">
-      <el-radio label="true">sort</el-radio>
-      <el-radio label="false">unsort</el-radio>
-    </el-radio-group>
-  </div>
-  <div class="w-full mt-4">
-    <el-button class="w-full"
-               type="primary"
-               @click="doGen">
-      GEN
-    </el-button>
-  </div>
-  <div class="w-full mt-4 space-y-4">
-    <el-input v-model="owner"
-              placeholder="Owner ETH adderss"></el-input>
-    <el-input v-model="inviter"
-              placeholder="inviter .bit"></el-input>
-    <el-input v-model="rYear"
-              placeholder="register years (it cannot exceed 20 years.)"></el-input>
-    <el-button class="w-full"
-               type="primary"
-               @click="doGenWeb3DID">
-      GEN Web3DID CSV
-    </el-button>
-  </div>
+  <el-tabs v-model="activeName">
+    <el-tab-pane label="DID GEN" name="panel-gen">
+      <el-input v-model="genTxt">
+      </el-input>
+      <div class="mt-4">
+        <el-input v-model="prefix"
+                  placeholder="prefix"></el-input>
+      </div>
+      <div class="mt-4">
+        <el-input v-model="suffix"
+                  placeholder="suffix"></el-input>
+      </div>
+      <div class="mt-4">
+        <el-radio-group v-model="isSort">
+          <el-radio label="true">sort</el-radio>
+          <el-radio label="false">unsort</el-radio>
+        </el-radio-group>
+      </div>
+      <div class="w-full mt-4">
+        <el-button class="w-full"
+                   type="primary"
+                   @click="doGen">
+          GEN
+        </el-button>
+      </div>
+      <div class="w-full mt-4 space-y-4">
+        <el-input v-model="owner"
+                  placeholder="Owner ETH adderss"></el-input>
+        <el-input v-model="inviter"
+                  placeholder="inviter .bit"></el-input>
+        <el-input v-model="rYear"
+                  placeholder="register years (it cannot exceed 20 years.)"></el-input>
+        <el-button class="w-full"
+                   type="primary"
+                   @click="doGenWeb3DID">
+          GEN Web3DID CSV
+        </el-button>
+      </div>
+    </el-tab-pane>
+    <el-tab-pane label="ETH Wallet" name="panel-wallet">
+      <el-input-number style="width: 100%"
+                       v-model="walletCount"
+                       :min="1"
+                       label="count of wallet"></el-input-number>
+      <div class="mt-4">
+        <el-button class="w-full"
+                   type="primary"
+                   @click="genWallet">
+          Gen ETH Wallet
+        </el-button>
+      </div>
+    </el-tab-pane>
+  </el-tabs>
 </div>
 <script>
   new Vue({
     el: '#app',
     data () {
       return {
+        activeName: 'panel-gen',
         isSort: 'false',
         prefix: '',
         suffix: '',
@@ -64,7 +82,8 @@
         owner: '',
         inviter: '6529.bit',
         rYear: '1',
-        web3Did: 'Account,Owner (ETH adderss / Tron address),inviter,register years (it cannot exceed 20 years.)'
+        web3Did: 'Account,Owner (ETH adderss / Tron address),inviter,register years (it cannot exceed 20 years.)',
+        walletCount: 1
       }
     },
     methods: {
@@ -161,6 +180,19 @@
         nameRow.unshift(this.web3Did)
         const csv = nameRow.join('\n')
         this._downloadCsv(csv, this._csvFileName('web3did'))
+      },
+      genWallet () {
+        const web3 = new Web3()
+        const walletList = ['address,privateKey']
+        for (let i = 0; i < this.walletCount; i++) {
+          const account = web3.eth.accounts.create()
+          const {
+            address,
+            privateKey
+          } = account
+          walletList.push([address, privateKey].join(','))
+        }
+        this._downloadCsv(walletList.join('\n'), `ETH-Wallet-${this.walletCount}.csv`)
       }
     }
   })
