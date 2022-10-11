@@ -33,7 +33,28 @@
           <el-radio label="false">unsort</el-radio>
         </el-radio-group>
       </div>
-      <div class="w-full mt-4">
+      <div class="mt-4">
+        <el-radio-group v-model="isFilter">
+          <el-radio label="true">filter</el-radio>
+          <el-radio label="false">unfilter</el-radio>
+        </el-radio-group>
+        <el-input class="mt-4"
+                  :disabled="isFilter === 'false'"
+                  type="textarea"
+                  v-model="filterText"
+                  :autosize="{ minRows: 2, maxRows: 10 }"
+                  placeholder="remove item which include every line your input">
+        </el-input>
+      </div>
+      <div class="mt-4">
+        gen count: {{ genCount }}
+      </div>
+      <div class="w-full mt-4 grid grid-cols-2">
+        <el-button class="w-full"
+                   type="primary"
+                   @click="doCount">
+          Count
+        </el-button>
         <el-button class="w-full"
                    type="primary"
                    @click="doGen">
@@ -76,6 +97,8 @@
       return {
         activeName: 'panel-gen',
         isSort: 'false',
+        isFilter: 'false',
+        filterText: '',
         prefix: '',
         suffix: '',
         genTxt: 'AABB',
@@ -83,7 +106,8 @@
         inviter: '8888.bit',
         rYear: '1',
         web3Did: 'Account,Owner (ETH adderss / Tron address),inviter,register years (it cannot exceed 20 years.)',
-        walletCount: 1
+        walletCount: 1,
+        genCount: '-'
       }
     },
     methods: {
@@ -156,6 +180,10 @@
         }, {})
         const match = Object.values(tmpMap)
         let nameList = this.genName(this.genTxt.length, match)
+        if (this.isFilter === 'true') {
+          const filterTextList = Array.from(new Set(this.filterText.split(/\r\n|\r|\n/).filter(item => !!item)))
+          nameList = nameList.filter(item => !filterTextList.some(fItem => item.indexOf(fItem) > -1))
+        }
         if (this.isSort === 'true') {
           nameList = this.genSortName(nameList, sortKeys, tmpMap)
         }
@@ -166,6 +194,10 @@
         const fileName = [this.prefix, this.genTxt, this.suffix].filter(item => !!item).join('-')
         const isSort = this.isSort === 'false' ? 'unsort' : 'sort'
         return typeName ? `${fileName}-${isSort}-${typeName}.csv` : `${fileName}-${isSort}.csv`
+      },
+      doCount () {
+        const nameList = this._genNames()
+        this.genCount = nameList.length
       },
       doGen () {
         const nameList = this._genNames()
