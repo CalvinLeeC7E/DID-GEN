@@ -9,9 +9,43 @@
   <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
   <script src="https://unpkg.com/web3@1.7.5/dist/web3.min.js"></script>
+  <style>
+    .app {
+      max-width: 1280px;
+    }
+    .bituser {
+      background-image: linear-gradient(90deg, #0e7dff, #17cbd7 50%, #00df9b);
+      padding: 30px 66px;
+      border-radius: 24px;
+    }
+    .view-btn:hover {
+      background-color: rgba(255, 255, 255, .9);
+      box-shadow: 0 0 0 0 rgb(0 0 0 / 15%);
+      -webkit-transform: scale(1.03);
+      -ms-transform: scale(1.03);
+      transform: scale(1.03);
+      color: rgba(18, 19, 20, .74);
+    }
+    .view-btn {
+      display: inline-block;
+      width: 172px;
+      margin-right: 0;
+      padding: 18px 24px;
+      border-radius: 100px;
+      background-color: #fff;
+      box-shadow: 1px 1px 2px 0 rgb(0 0 0 / 15%);
+      color: #121314;
+      font-size: 16px;
+      line-height: 18px;
+      font-weight: 600;
+      text-align: center;
+      -webkit-transition: .2s;
+      transition: .2s;
+    }
+  </style>
 </head>
 <body>
-<div id="app" class="p-4 mx-auto">
+<div id="app" class="app p-4 mx-auto">
   <div class="text-2xl">
     DID-GEN
   </div>
@@ -89,6 +123,12 @@
       </div>
     </el-tab-pane>
   </el-tabs>
+  <div class="bituser mt-8 text-center">
+    <div class="text-6xl font-bold mb-8">News about .bit</div>
+    <a class="cursor-pointer view-btn"
+       target="_blank"
+       href="https://bituser.org/">Let's Go</a>
+  </div>
 </div>
 <script>
   new Vue({
