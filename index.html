@@ -9,6 +9,7 @@
   <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
   <script src="https://unpkg.com/web3@1.7.5/dist/web3.min.js"></script>
+  <script src="https://unpkg.com/clipboard@2/dist/clipboard.min.js"></script>
   <style>
     .app {
       max-width: 1280px;
@@ -59,7 +60,7 @@
       </div>
       <div class="mt-4">
         <el-input v-model="suffix"
-                  placeholder="suffix"></el-input>
+                  placeholder="suffix: .bit/.x.bit/.eth"></el-input>
       </div>
       <div class="mt-4">
         <el-radio-group v-model="isSort">
@@ -83,19 +84,31 @@
       <div class="mt-4">
         gen count: {{ genCount }}
       </div>
-      <div class="w-full mt-4 grid grid-cols-2">
-        <el-button class="w-full"
-                   type="primary"
-                   @click="doCount">
-          Count
-        </el-button>
-        <el-button class="w-full"
-                   type="primary"
-                   @click="doGen">
-          GEN
-        </el-button>
+      <div class="w-full mt-4 grid grid-cols-3 gap-2">
+        <div>
+          <el-button class="w-full"
+                     type="primary"
+                     @click="doCount">
+            Count
+          </el-button>
+        </div>
+        <div>
+          <el-button class="w-full"
+                     type="primary"
+                     @click="doGen">
+            Download CSV
+          </el-button>
+        </div>
+        <div>
+          <el-button class="clip-btn w-full"
+                     type="primary"
+                     :data-clipboard-text="copyDid"
+                     @click="doGenToClipboard">
+            Copy to clipboard
+          </el-button>
+        </div>
       </div>
-      <div class="w-full mt-4 space-y-4">
+      <div class="w-full mt-4 space-y-4 hidden">
         <el-input v-model="owner"
                   placeholder="Owner ETH adderss"></el-input>
         <el-input v-model="inviter"
@@ -147,8 +160,12 @@
         rYear: '1',
         web3Did: 'Account,Owner (ETH adderss / Tron address),inviter,register years (it cannot exceed 20 years.)',
         walletCount: 1,
-        genCount: '-'
+        genCount: '-',
+        copyDid: ''
       }
+    },
+    mounted () {
+      new ClipboardJS('.clip-btn')
     },
     methods: {
       genName (length, match) {
@@ -238,11 +255,18 @@
       doCount () {
         const nameList = this._genNames()
         this.genCount = nameList.length
+        return nameList
       },
       doGen () {
-        const nameList = this._genNames()
+        const nameList = this.doCount()
         const csv = nameList.join('\n')
         this._downloadCsv(csv, this._csvFileName())
+      },
+      doGenToClipboard () {
+        const nameList = this.doCount()
+        const csv = nameList.join('\n')
+        this.copyDid = csv
+        this.$message.success('Copy Success')
       },
       doGenWeb3DID () {
         const nameList = this._genNames()
